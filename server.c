@@ -5,33 +5,38 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include <signal.h>
 
 #define PORT 8000
 #define MAX_CLIENTS 10
 #define BUFFER_SIZE 1024
 
-// FILE *fptr;
+FILE *fptr;
 pthread_mutex_t mutex;
 
 int client_sockets[MAX_CLIENTS] = {0};
 int num_clients = 0;
 
 void *handle_client(void *);
+void signal_handler(int sig);
 
 int main()
 {
     pthread_mutex_init(&mutex, NULL);
 
-    // fptr = fopen("log.txt", "a");
-    // if (fptr == NULL)
-    // {
-    //     printf("Error opening file.\n");
-    // }
+    signal(SIGINT, signal_handler);
+
+    fptr = fopen("log.txt", "a");
+    if (fptr == NULL)
+    {
+        printf("Error opening file.\n");
+    }
 
     int server_fd, new_socket;
     struct sockaddr_in address;
     int opt = 1;
     int addrlen = sizeof(address);
+
     // Create socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
@@ -96,7 +101,7 @@ int main()
     }
 
     // Close log file
-    // fclose(fptr);
+    fclose(fptr);
     
 
     pthread_mutex_destroy(&mutex);
@@ -115,10 +120,10 @@ void *handle_client(void *socket_ptr)
     while ((valread = read(socket, buffer, BUFFER_SIZE)) > 0)
     {
 
-        // fwrite(buffer, strlen(buffer), 1, fptr);
-        // pthread_mutex_lock(&mutex);
-        // fprintf(fptr, "%s\n", buffer);
-        // pthread_mutex_unlock(&mutex);
+        pthread_mutex_lock(&mutex);
+        fprintf(fptr, "%s\n", buffer);
+        fwrite(buffer, strlen(buffer), 1, fptr);
+        pthread_mutex_unlock(&mutex);
         // printf("\n\tReceiving from %d\n", socket);
 
         printf("[%d]: %s", socket, buffer);
@@ -165,4 +170,9 @@ void *handle_client(void *socket_ptr)
     pthread_detach(pthread_self());
 
     return NULL;
+}
+
+void signal_handler(int sig) {
+    fclose(fptr);
+    exit(0);
 }

@@ -8,9 +8,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-//
+
 #define PORT 8000
 #define BUFFER_SIZE 1024
+#define SERVER_IP "127.0.0.1"
 
 pthread_mutex_t mutex;
 
@@ -40,7 +41,7 @@ int main(int argc, char const *argv[]) {
     serv_addr.sin_port = htons(PORT);
 
     // Convert IPv4 and IPv6 addresses from text to binary form
-    if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0) {
+    if (inet_pton(AF_INET, SERVER_IP, &serv_addr.sin_addr) <= 0) {
         printf("\nInvalid address/ Address not supported \n");
         return -1;
     }
