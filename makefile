@@ -10,4 +10,4 @@ client: src/client.c
 	$(CC) $(CFLAGS) -o bin/client src/client.c
 
 clean:
-	rm -f server client
+	rm -f bin/*
